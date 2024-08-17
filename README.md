@@ -19,10 +19,10 @@ MVC Bank is a Cash Management System designed to handle cash transfers between d
 
 ## Prerequisites
 
-- JDK 17 or later
+- JDK 17 
 - Maven
 - PostgreSQL
-- IDE (e.g., IntelliJ IDEA, Eclipse)
+- IntelliJ IDEA
 
 ## Setup
 
