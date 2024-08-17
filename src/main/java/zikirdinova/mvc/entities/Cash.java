@@ -2,7 +2,6 @@ package zikirdinova.mvc.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import zikirdinova.mvc.enums.Currency;
 
 @Entity
 @Table(name = "cashes")
@@ -18,7 +17,6 @@ public class Cash {
     private String cashName;
     private String password;
     private double balance;
-    private Currency currency;
 
 
     }

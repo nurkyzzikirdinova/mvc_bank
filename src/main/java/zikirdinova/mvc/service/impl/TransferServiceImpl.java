@@ -4,14 +4,14 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import zikirdinova.mvc.entities.Transfer;
-import zikirdinova.mvc.entities.Cash; // Добавьте этот импорт
+import zikirdinova.mvc.entities.Cash;
 import zikirdinova.mvc.enums.Status;
 import zikirdinova.mvc.exception.AlreadyExistsException;
 import zikirdinova.mvc.exception.NotFoundException;
 import zikirdinova.mvc.repo.CashRepository;
 import zikirdinova.mvc.repo.TransferRepository;
 import zikirdinova.mvc.service.TransferService;
-import zikirdinova.mvc.service.CashService; // Добавьте этот импорт
+import zikirdinova.mvc.service.CashService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,6 +25,10 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     public String createTransfer(Transfer transfer) throws NotFoundException {
+        if (transfer.getFromCash() == null || transfer.getToCash() == null) {
+            throw new IllegalArgumentException("FromCash or ToCash must not be null");
+        }
+
         Cash fromCash = cashService.getCashById(transfer.getFromCash().getId());
         Cash toCash = cashService.getCashById(transfer.getToCash().getId());
 
@@ -37,6 +41,7 @@ public class TransferServiceImpl implements TransferService {
 
         return uniqueCode;
     }
+
 
     private String generateUniqueCode() {
         return UUID.randomUUID().toString();
@@ -73,8 +78,8 @@ public class TransferServiceImpl implements TransferService {
         return transferRepository.findAll();
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void processTransfer(String code) throws NotFoundException, AlreadyExistsException {
         Transfer transfer = transferRepository.findByCode(code)
                 .orElseThrow(() -> new NotFoundException("Transfer with code " + code + " not found"));
@@ -91,18 +96,23 @@ public class TransferServiceImpl implements TransferService {
             throw new IllegalArgumentException("Insufficient balance in source cash");
         }
 
+        System.out.println("Before transfer: fromCash balance = " + fromCash.getBalance() + ", toCash balance = " + toCash.getBalance());
+
         fromCash.setBalance(fromCash.getBalance() - amount);
         toCash.setBalance(toCash.getBalance() + amount);
 
-        cashRepository.save(fromCash); // Обновляем данные Cash
-        cashRepository.save(toCash);   // Обновляем данные Cash
+        cashRepository.save(fromCash);
+        cashRepository.save(toCash);
 
-        transfer.setStatus(Status.ISSUED); // Изменяем статус на COMPLETED
-        transferRepository.save(transfer); // Обновляем данные Transfer
+        System.out.println("After transfer: fromCash balance = " + fromCash.getBalance() + ", toCash balance = " + toCash.getBalance());
+
+        transfer.setStatus(Status.ISSUED);
+        transferRepository.save(transfer);
     }
+
 
     @Override
     public boolean processCode(String code) {
-        return "VALID_CODE".equals(code); // Пример проверки кода
+        return "VALID_CODE".equals(code);
     }
 }

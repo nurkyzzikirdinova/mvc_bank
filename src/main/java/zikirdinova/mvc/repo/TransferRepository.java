@@ -15,7 +15,7 @@ import java.util.Optional;
 public interface TransferRepository extends JpaRepository<Transfer, Long> {
     Optional<Transfer> findByCode(String code);
 
-    @Query("SELECT t FROM Transfer t WHERE t.createdAt BETWEEN :fromDate AND :toDate AND (:comment IS NULL OR t.comment LIKE %:comment%)")
+    @Query("select t from Transfer t where t.createdAt between :fromDate and :toDate and (:comment is null or t.comment like %:comment%)")
     List<Transfer> findTransfersByCriteria(
             @Param("fromDate") LocalDateTime fromDate,
             @Param("toDate") LocalDateTime toDate,

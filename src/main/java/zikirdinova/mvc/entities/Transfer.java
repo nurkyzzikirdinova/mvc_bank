@@ -2,7 +2,6 @@ package zikirdinova.mvc.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import zikirdinova.mvc.enums.Currency;
 import zikirdinova.mvc.enums.Status;
 
 import java.time.LocalDateTime;
@@ -18,9 +17,6 @@ public class Transfer {
 
     private double amount;
 
-    @Enumerated(EnumType.STRING)
-    private Currency currency;
-
     @Column(unique = true)
     private String code;
 
@@ -33,11 +29,11 @@ public class Transfer {
 
     @ManyToOne
     @JoinColumn(name = "from_cash_id")
-    private Cash fromCash;  // Обновлено на отношение
+    private Cash fromCash;
 
     @ManyToOne
     @JoinColumn(name = "to_cash_id")
-    private Cash toCash;    // Обновлено на отношение
+    private Cash toCash;
 
     private String senderFullName;
     private String receiverFullName;

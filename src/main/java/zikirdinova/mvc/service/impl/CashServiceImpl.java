@@ -8,6 +8,7 @@ import zikirdinova.mvc.exception.NotFoundException;
 import zikirdinova.mvc.repo.CashRepository;
 import zikirdinova.mvc.service.CashService;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,18 +27,21 @@ public class CashServiceImpl implements CashService {
             throw new AlreadyExistsException("Cash with name '" + cash.getCashName() + "' already exists");
         }
 
+        if (cash.getBalance() < 1000) {
+            cash.setBalance(1000);
+        }
+
         cashRepository.save(cash);
     }
 
 
-
     @Override
-    public boolean authenticate(String cashName, String password) {
+    public boolean authenticate(String cashName, String password) throws NotFoundException {
         Optional<Cash> cashOptional = cashRepository.findByCashName(cashName);
-        if (cashOptional.isPresent() && cashOptional.get().getPassword().equals(password)) {
-            return true;
+        if (cashOptional.isEmpty() || !cashOptional.get().getPassword().equals(password)) {
+            throw new NotFoundException("Invalid cash name or password");
         }
-        return false;
+        return true;
     }
 
 
@@ -67,6 +71,41 @@ public class CashServiceImpl implements CashService {
     public Cash getCashById(Long id) throws NotFoundException {
         return cashRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Cash with ID " + id + " not found"));
+    }
+
+
+    @Override
+    public void deposit(String cashName, BigDecimal amount) {
+        Optional<Cash> optionalCash = cashRepository.findByCashName(cashName);
+
+        if (optionalCash.isPresent()) {
+            Cash cash = optionalCash.get();
+            cash.setBalance(cash.getBalance());
+            cashRepository.save(cash);
+        } else {
+            throw new RuntimeException("Cash with name " + cashName + " not found");
+        }
+    }
+    @Override
+    public void withdraw(String cashName, BigDecimal amount) {
+        Optional<Cash> optionalCash = cashRepository.findByCashName(cashName);
+
+        if (optionalCash.isPresent()) {
+            Cash cash = optionalCash.get();
+            if (cash.getBalance() >= 0) {
+                cash.setBalance(cash.getBalance());
+                cashRepository.save(cash);
+            } else {
+                throw new RuntimeException("Insufficient funds");
+            }
+        } else {
+            throw new RuntimeException("Cash with name " + cashName + " not found");
+        }
+    }
+    @Override
+    public Cash getCash(String cashName) {
+        return cashRepository.findByCashName(cashName)
+                .orElseThrow(() -> new RuntimeException("Cash with name " + cashName + " not found"));
     }
 
 
